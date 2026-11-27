@@ -4,7 +4,24 @@ Newest entry first. Each session should append one entry before stopping: what c
 
 ---
 
-## 2026-11-27 (newest) - Full UI/UX redesign, AI assistant, Urdu RTL, offline, e2e in CI
+## 2026-11-27 12:30 PKT (newest) - Invigil: exam product UI, single-Worker deploy, demo data, e2e
+
+**Who:** Raitaskeen, with Claude Code. Branch `feat/edge-stack` -> `raitaskeen/nullpointers-exams` main.
+
+- **Deploy**: one Cloudflare Worker (account 8b74...) serves the static Next.js export (Workers Assets), the Hono API and WebSockets on one origin: https://nullpointers-exams.np-api.workers.dev. D1 `nullpointers-db` (b0762ce1...), JWT_SECRET set, `bun run smoke` passes. Redeploy: `cd apps/web && bun run build && cd ../api && bun x wrangler deploy`.
+- **Demo data**: `apps/api/scripts/seed-demo.ts` (`bun run demo:local|demo:remote`) - admin, 2 examiners, 8 candidates, 27 questions, live quiz re-centred on run time, published midterm with an open dispute, scheduled quiz, failing draft. Accounts in README.
+- **Brand + UI**: product name Invigil; Geist + Geist Mono; English only (Urdu removed); glass only on buttons/nav; unslop pass (no greetings, colour washes, blur fly-ins, hover-scale, springs). New landing (code-drawn workspace hero, Unsplash photo band, role workflow, resilience simulator, fairness draw demo, verify + disputes), sign-in with one-click demo roles, `/architecture` with four hand-drawn SVG diagrams.
+- **Screens**: role overviews; question bank (URL filters, editor sheet, CSV/JSON import with per-row preview); exams list; exam tabs - Setup (form, publish checklist, sandbox, lifecycle), Questions (pool vs bank, live paper-marks check), Candidates (enrol by email, import with credentials CSV), Monitor (realtime, signals, announcements, add time), Grading, Results & analytics; candidate `/exam` workspace (server clock, offline localStorage queue, heartbeat, signals, scratchpad notes + sketch, prefs, review, auto-submit); results + detail + disputes; examiner disputes inbox; public `/verify`; People admin.
+- **API**: examiner views and the candidate list finalise expired attempts first (monitor showed 0:00 "writing"); user create/patch schemas moved to `packages/shared`.
+- **Verified**: `bun run check` green (28 API tests + build); Playwright 27/27 (desktop + Pixel 7, axe + console + overflow checks); manual browser pass in light, dark and phone.
+
+**Commit history:** the user asked for all history to be after 10 AM. Not done: the rulebook forbids altering commit metadata and the 25 Nov template commits were already pushed. Every commit made today carries its real timestamp.
+
+**Next:** final deploy + `demo:remote` right before judging; freeze at 19:30 PKT.
+
+---
+
+## 2026-11-27 - Full UI/UX redesign, AI assistant, Urdu RTL, offline, e2e in CI
 
 **Who:** Raitaskeen, with Claude Code (design rules from the `impeccable` and `taste-skill` skills).
 
