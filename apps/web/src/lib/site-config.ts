@@ -12,9 +12,10 @@ export const siteConfig = {
   },
 
   nav: [
-    { label: "How it works", href: "#workflow" },
-    { label: "Resilience", href: "#resilience" },
-    { label: "Fairness", href: "#fairness" },
+    { label: "How it works", href: "/#workflow" },
+    { label: "Resilience", href: "/#resilience" },
+    { label: "Fairness", href: "/#fairness" },
+    { label: "Architecture", href: "/architecture" },
     { label: "Verify a result", href: "/verify" },
   ],
 
@@ -30,9 +31,10 @@ export const siteConfig = {
     {
       heading: "Product",
       links: [
-        { label: "How it works", href: "#workflow" },
-        { label: "Resilience", href: "#resilience" },
-        { label: "Fairness", href: "#fairness" },
+        { label: "How it works", href: "/#workflow" },
+        { label: "Resilience", href: "/#resilience" },
+        { label: "Fairness", href: "/#fairness" },
+        { label: "Architecture", href: "/architecture" },
       ],
     },
     {
