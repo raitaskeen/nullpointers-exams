@@ -1,22 +1,17 @@
 @import "tailwindcss";
 @import "../theme/tokens.css";
 
-/* Self-hosted variable fonts (no runtime font CDN). Urdu loads only when Arabic-script text appears
-   (unicode-range), so it costs nothing for English visitors. */
-@import "@fontsource-variable/hanken-grotesk/index.css";
-@import "@fontsource-variable/newsreader/opsz.css";
-@import "@fontsource-variable/newsreader/opsz-italic.css";
-@import "@fontsource-variable/jetbrains-mono/index.css";
-@import "@fontsource/noto-nastaliq-urdu/400.css";
-@import "@fontsource/noto-nastaliq-urdu/600.css";
+/* Self-hosted variable fonts (no runtime font CDN): Geist for everything, Geist Mono for codes and numbers. */
+@import "@fontsource-variable/geist/index.css";
+@import "@fontsource-variable/geist-mono/index.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Hanken Grotesk Variable", "Noto Nastaliq Urdu", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* Editorial serif for marketing display type only (Persuade surfaces). Product UI stays sans. */
-  --font-display: "Newsreader Variable", ui-serif, Georgia, serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Display type is the same family, set tighter and heavier: one voice across site and product. */
+  --font-display: "Geist Variable", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
@@ -113,10 +108,16 @@
 
   body {
     min-height: 100dvh;
-    background: var(--background);
+    /* A faint brand-tinted wash at the top of every page: gives glass surfaces something to sit on. */
+    background:
+      radial-gradient(120% 60% at 50% -10%, var(--canvas-tint), transparent 60%) no-repeat,
+      var(--background);
+    background-attachment: fixed;
     color: var(--foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "cv11", "ss01";
+    font-feature-settings: "ss01", "ss03", "cv01";
+    font-optical-sizing: auto;
+    letter-spacing: -0.006em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -153,22 +154,13 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* No italic anywhere: emphasis is weight and color, never slant. */
+  em, i, cite, var, address, dfn { font-style: normal; }
+
   :focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
     border-radius: 4px;
-  }
-
-  /* RTL (Urdu): Nastaliq needs more line height and no negative tracking. */
-  [dir="rtl"] body {
-    line-height: 1.9;
-  }
-  [dir="rtl"] h1,
-  [dir="rtl"] h2,
-  [dir="rtl"] h3,
-  [dir="rtl"] h4 {
-    letter-spacing: 0;
-    line-height: 1.6;
   }
 
   ::-webkit-scrollbar {

@@ -4,11 +4,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ArrowSquareOut, CaretUpDown, List, MagnifyingGlass, SignOut, Sparkle, SquaresFour, Users, X, type Icon,
+  ArrowSquareOut, Books, CaretUpDown, ClipboardText, List, MagnifyingGlass, Scales, SealCheck, SignOut, SquaresFour, Users, X, type Icon,
 } from "@phosphor-icons/react";
-import { allResources } from "@np/shared";
 import { Logo } from "@/components/brand/Logo";
-import { ResourceIcon } from "@/components/ResourceIcon";
 import { Preferences } from "@/components/layout/Preferences";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -25,34 +23,27 @@ import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { useI18n } from "@/lib/i18n";
 import { cn, initials } from "@/lib/utils";
-import { Assistant } from "./Assistant";
 import { CommandMenu } from "./CommandMenu";
 import { ShellProvider, useShell } from "./shell-context";
 
 interface NavItem {
   href: string;
   label: string;
-  icon: Icon | string;
+  icon: Icon;
   section?: string;
   permission?: string;
 }
 
-/** Hand-built pages go here; generated resources are added automatically from @np/shared. */
-const EXTRA_NAV: NavItem[] = [];
-
+/** Navigation follows the role: examiners run exams, candidates take them, admins see everything. */
 function useNavItems(): NavItem[] {
   const { can } = useAuth();
   const { t } = useI18n();
   const items: NavItem[] = [
     { href: "/app", label: t("nav.overview"), icon: SquaresFour },
-    ...allResources().map((r) => ({
-      href: `/app/${r.name}`,
-      label: r.plural,
-      icon: r.icon ?? "Cube",
-      section: t("nav.workspace"),
-      permission: `${r.name}:read`,
-    })),
-    ...EXTRA_NAV,
+    { href: "/app/exams", label: t("nav.exams"), icon: ClipboardText, section: t("nav.workspace"), permission: "exams:manage" },
+    { href: "/app/questions", label: t("nav.questions"), icon: Books, section: t("nav.workspace"), permission: "questions:manage" },
+    { href: "/app/disputes", label: t("nav.disputes"), icon: Scales, section: t("nav.workspace"), permission: "exams:manage" },
+    { href: "/app/results", label: t("nav.results"), icon: SealCheck, section: t("nav.workspace"), permission: "exams:take" },
     { href: "/app/users", label: t("nav.users"), icon: Users, section: t("nav.admin"), permission: "users:read" },
   ];
   return items.filter((i) => !i.permission || can(i.permission));
@@ -88,11 +79,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                     : "text-sidebar-muted-foreground hover:bg-sidebar-active/70 hover:text-foreground",
                 )}
               >
-                {typeof item.icon === "string" ? (
-                  <ResourceIcon name={item.icon} weight={active ? "duotone" : "regular"} className={cn("size-[1.125rem]", active && "text-primary")} />
-                ) : (
-                  <item.icon weight={active ? "duotone" : "regular"} className={cn("size-[1.125rem]", active && "text-primary")} aria-hidden="true" />
-                )}
+                <item.icon weight={active ? "duotone" : "regular"} className={cn("size-[1.125rem]", active && "text-primary")} aria-hidden="true" />
                 <span className="truncate">{item.label}</span>
               </Link>
             );
@@ -150,7 +137,7 @@ function AccountMenu({ compact = false }: { compact?: boolean }) {
           <>
             <span className="min-w-0 flex-1 leading-tight">
               <span className="block truncate text-sm font-medium">{user.fullName}</span>
-              <span className="block truncate text-xs text-muted-foreground">{hasRole("admin") ? t("account.admin") : t("account.member")}</span>
+              <span className="block truncate text-xs text-muted-foreground">{hasRole("admin") ? t("account.admin") : hasRole("examiner") ? t("account.examiner") : t("account.candidate")}</span>
             </span>
             <CaretUpDown className="size-4 text-muted-foreground" aria-hidden="true" />
           </>
@@ -178,29 +165,10 @@ function AccountMenu({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function AssistantButton({ className }: { className?: string }) {
-  const { openAssistant } = useShell();
-  const { t } = useI18n();
-  return (
-    <button
-      type="button"
-      onClick={() => openAssistant()}
-      className={cn(
-        "flex min-h-11 w-full items-center gap-2.5 rounded-lg px-3 text-sm font-medium text-sidebar-muted-foreground transition-colors hover:bg-sidebar-active/70 hover:text-foreground pointer-fine:min-h-9",
-        className,
-      )}
-    >
-      <Sparkle weight="duotone" className="size-[1.125rem] text-primary" aria-hidden="true" />
-      <span className="flex-1 text-start">{t("cmd.ask")}</span>
-      <kbd className="kbd hidden pointer-fine:inline-flex">⌘J</kbd>
-    </button>
-  );
-}
-
 function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { t } = useI18n();
-  const { setCommandOpen, openAssistant } = useShell();
+  const { setCommandOpen } = useShell();
   const [drawer, setDrawer] = useState(false);
 
   useEffect(() => setDrawer(false), [pathname]);
@@ -222,7 +190,6 @@ function Shell({ children }: { children: ReactNode }) {
         <NavLinks onNavigate={onNavigate} />
       </div>
       <div className="flex flex-col gap-1 border-t border-sidebar-border pt-3">
-        <AssistantButton />
         <AccountMenu />
       </div>
     </>
@@ -274,24 +241,20 @@ function Shell({ children }: { children: ReactNode }) {
           <Button variant="ghost" size="icon-sm" aria-label={t("nav.search")} onClick={() => setCommandOpen(true)}>
             <MagnifyingGlass />
           </Button>
-          <Button variant="ghost" size="icon-sm" aria-label={t("cmd.ask")} onClick={() => openAssistant()}>
-            <Sparkle weight="duotone" className="text-primary" />
-          </Button>
           <AccountMenu compact />
         </header>
 
-        <main id="main" key={pathname} className="mx-auto w-full max-w-6xl px-4 pt-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] animate-[rise_320ms_var(--ease-out)_backwards] sm:px-6 lg:px-10 lg:pt-10">
+        <main id="main" key={pathname} className="mx-auto w-full max-w-7xl px-4 pt-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] animate-[rise_320ms_var(--ease-out)_backwards] sm:px-6 lg:px-10 lg:pt-10">
           {children}
         </main>
       </div>
 
       <CommandMenu />
-      <Assistant />
     </div>
   );
 }
 
-/** Authenticated app shell: sidebar (drawer on phones), ⌘K command palette and the AI assistant. */
+/** Authenticated app shell: sidebar (drawer on phones) and the ⌘K command palette. */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <ShellProvider>

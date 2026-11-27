@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 /**
- * Lightweight i18n for the product chrome (navigation, actions, states, assistant). English + Urdu (RTL).
+ * Lightweight i18n for the product chrome. English only today; every string is keyed so a language can be added.
  * Domain labels come from resource definitions; validation messages from the shared schemas.
  * Add a language: add a dictionary below with the same keys + an entry in LOCALES.
  */
@@ -13,6 +13,17 @@ const en = {
   "nav.workspace": "Workspace",
   "nav.admin": "Admin",
   "nav.users": "People",
+  "nav.exams": "Exams",
+  "nav.questions": "Question bank",
+  "nav.disputes": "Disputes",
+  "nav.results": "My results",
+  "account.examiner": "Examiner",
+  "account.candidate": "Candidate",
+  "cmd.verify": "Verify a result",
+  "cmd.newExam": "New exam",
+  "cmd.newQuestion": "New question",
+  "cmd.importQuestions": "Import questions",
+  "dash.myExams": "My exams",
   "nav.viewSite": "Public site",
   "nav.search": "Search or jump to…",
   "nav.openMenu": "Open navigation",
@@ -102,105 +113,13 @@ const en = {
 
 export type MessageKey = keyof typeof en;
 
-const ur: Record<MessageKey, string> = {
-  "nav.overview": "جائزہ",
-  "nav.workspace": "ورک اسپیس",
-  "nav.admin": "ایڈمن",
-  "nav.users": "افراد",
-  "nav.viewSite": "عوامی سائٹ",
-  "nav.search": "تلاش کریں یا کہیں جائیں…",
-  "nav.openMenu": "مینو کھولیں",
-  "nav.closeMenu": "مینو بند کریں",
-  "account.menu": "اکاؤنٹ مینو",
-  "account.logout": "لاگ آؤٹ",
-  "account.logoutAll": "ہر جگہ سے لاگ آؤٹ",
-  "account.admin": "منتظم",
-  "account.member": "رکن",
-  "account.theme": "ظاہری شکل",
-  "account.light": "روشن",
-  "account.dark": "تاریک",
-  "account.language": "زبان",
-  "account.palette": "برانڈ کا رنگ",
-  "common.new": "نیا",
-  "common.save": "تبدیلیاں محفوظ کریں",
-  "common.create": "بنائیں",
-  "common.cancel": "منسوخ",
-  "common.delete": "حذف کریں",
-  "common.edit": "ترمیم",
-  "common.retry": "دوبارہ کوشش کریں",
-  "common.close": "بند کریں",
-  "common.all": "سب",
-  "common.yes": "ہاں",
-  "common.no": "نہیں",
-  "common.open": "کھولیں",
-  "list.live": "لائیو",
-  "list.connecting": "جڑ رہا ہے",
-  "list.search": "{plural} میں تلاش کریں",
-  "list.empty": "ابھی کوئی {plural} نہیں",
-  "list.emptyHint": "پہلا بنائیں، یہ فوراً سب کو یہاں نظر آئے گا۔",
-  "list.noMatch": "کچھ نہیں ملا",
-  "list.noMatchHint": "کوئی اور تلاش آزمائیں یا فلٹر صاف کریں۔",
-  "list.clear": "فلٹر صاف کریں",
-  "list.showing": "{total} میں سے {from}–{to}",
-  "list.rows": "فی صفحہ قطاریں",
-  "list.prev": "پچھلا صفحہ",
-  "list.next": "اگلا صفحہ",
-  "list.page": "صفحہ {page}",
-  "list.deleteTitle": "یہ {singular} حذف کریں؟",
-  "list.deleteBody": "یہ سب کے لیے مستقل طور پر ہٹ جائے گا۔ اسے واپس نہیں لایا جا سکتا۔",
-  "list.details": "تفصیلات",
-  "list.created": "بنایا گیا",
-  "list.updated": "اپ ڈیٹ ہوا",
-  "form.new": "نیا {singular}",
-  "form.edit": "{singular} میں ترمیم",
-  "form.choose": "{label} منتخب کریں",
-  "form.saving": "محفوظ ہو رہا ہے…",
-  "dash.morning": "صبح بخیر",
-  "dash.afternoon": "سہ پہر بخیر",
-  "dash.evening": "شام بخیر",
-  "dash.subtitle": "آپ کی ورک اسپیس میں یہ چل رہا ہے۔",
-  "dash.activity": "حالیہ سرگرمی",
-  "dash.activityEmpty": "ٹیم کے کام کے ساتھ سرگرمی یہاں نظر آئے گی۔",
-  "dash.trend": "پچھلے 14 دنوں میں نئے",
-  "dash.breakdown": "{field} کے لحاظ سے",
-  "dash.total": "کل",
-  "dash.week": "اس ہفتے +{n}",
-  "dash.quick": "فوری اقدامات",
-  "cmd.placeholder": "کمانڈ لکھیں یا تلاش کریں…",
-  "cmd.navigate": "جائیں",
-  "cmd.create": "بنائیں",
-  "cmd.preferences": "ترجیحات",
-  "cmd.ask": "معاون سے پوچھیں",
-  "cmd.empty": "کوئی نتیجہ نہیں۔",
-  "ai.title": "معاون",
-  "ai.subtitle": "آپ کے لائیو ڈیٹا سے جوابات، آپ کی اجازت کے اندر۔",
-  "ai.placeholder": "اپنی ورک اسپیس کے بارے میں کچھ بھی پوچھیں…",
-  "ai.send": "بھیجیں",
-  "ai.stop": "روکیں",
-  "ai.new": "نئی گفتگو",
-  "ai.thinking": "سوچ رہا ہے",
-  "ai.lookedUp": "{what} دیکھا",
-  "ai.notConfigured": "معاون ابھی ترتیب نہیں دیا گیا۔ اسے چالو کرنے کے لیے API میں GROQ_API_KEY شامل کریں۔",
-  "ai.error": "معاون جواب نہیں دے سکا۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔",
-  "ai.disclaimer": "AI غلطی کر سکتا ہے۔ اہم تفصیلات کی تصدیق کریں۔",
-  "offline.banner": "آپ آف لائن ہیں۔ ہم خود بخود دوبارہ جڑ جائیں گے۔",
-  "offline.back": "دوبارہ آن لائن",
-  "error.title": "اس اسکرین پر کچھ خراب ہو گیا",
-  "error.body": "یہ ریکارڈ ہو گیا ہے۔ ری لوڈ کرنے سے عموماً ٹھیک ہو جاتا ہے۔",
-  "error.reload": "ری لوڈ کریں",
-  "notFound.title": "یہ صفحہ موجود نہیں",
-  "notFound.body": "لنک پرانا ہو سکتا ہے یا صفحہ منتقل ہو گیا ہے۔ باقی سب اپنی جگہ پر ہے۔",
-  "notFound.home": "ہوم پر واپس",
-  "notFound.app": "ایپ کھولیں",
-};
 
 export const LOCALES = [
   { id: "en", label: "English", dir: "ltr", intl: "en-US" },
-  { id: "ur", label: "اردو", dir: "rtl", intl: "ur-PK" },
 ] as const;
 export type Locale = (typeof LOCALES)[number]["id"];
 
-const DICTS: Record<Locale, Record<MessageKey, string>> = { en, ur };
+const DICTS: Record<Locale, Record<MessageKey, string>> = { en };
 const KEY = "np-locale";
 
 interface I18n {
@@ -219,7 +138,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(KEY);
-      if (saved === "en" || saved === "ur") set(saved);
+      if (saved === "en") set(saved);
     } catch {
       // ignore
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Moon, SlidersHorizontal, Sun, Translate } from "@phosphor-icons/react";
+import { Check, Moon, SlidersHorizontal, Sun } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,14 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LOCALES, useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { PALETTES, usePalette } from "@/lib/palette";
 import { useTheme } from "@/lib/theme-provider";
 import { cn } from "@/lib/utils";
 
-/** Appearance, language and brand color in one place (also reachable from ⌘K). */
+/** Appearance and brand color in one place (also reachable from ⌘K). */
 export function Preferences({ className }: { className?: string }) {
-  const { t, locale, setLocale } = useI18n();
+  const { t } = useI18n();
   const { resolvedTheme, setTheme } = useTheme();
   const { palette, setPalette } = usePalette();
   const dark = resolvedTheme === "dark";
@@ -37,17 +37,6 @@ export function Preferences({ className }: { className?: string }) {
             {dark ? <Sun /> : <Moon />}
             {dark ? t("account.light") : t("account.dark")}
           </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>{t("account.language")}</DropdownMenuLabel>
-          {LOCALES.map((l) => (
-            <DropdownMenuItem key={l.id} onClick={() => setLocale(l.id)} closeOnClick={false}>
-              <Translate />
-              <span className="flex-1">{l.label}</span>
-              {locale === l.id && <Check className="text-primary" />}
-            </DropdownMenuItem>
-          ))}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

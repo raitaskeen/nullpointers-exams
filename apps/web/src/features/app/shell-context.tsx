@@ -18,7 +18,7 @@ const Ctx = createContext<ShellState | null>(null);
 const isTyping = (el: EventTarget | null) =>
   el instanceof HTMLElement && (el.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName));
 
-/** App-wide UI state + keyboard shortcuts: ⌘K / Ctrl+K or "/" = command palette, ⌘J / Ctrl+J = assistant. */
+/** App-wide UI state + keyboard shortcuts: ⌘K / Ctrl+K or "/" = command palette. */
 export function ShellProvider({ children }: { children: ReactNode }) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -36,9 +36,6 @@ export function ShellProvider({ children }: { children: ReactNode }) {
       if (mod && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setCommandOpen((o) => !o);
-      } else if (mod && e.key.toLowerCase() === "j") {
-        e.preventDefault();
-        setAssistantOpen((o) => !o);
       } else if (e.key === "/" && !isTyping(e.target) && !commandOpen) {
         e.preventDefault();
         setCommandOpen(true);

@@ -2,10 +2,9 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle } from "@phosphor-icons/react";
+import { ArrowLeft, CloudCheck, LockKey, SealCheck, Timer } from "@phosphor-icons/react";
 import { Logo } from "@/components/brand/Logo";
 import { Preferences } from "@/components/layout/Preferences";
-import { ProductFrame } from "@/features/home/ProductFrame";
 import { siteConfig } from "@/lib/site-config";
 
 type AuthShellProps = {
@@ -17,7 +16,7 @@ type AuthShellProps = {
 };
 
 /**
- * Sign-in/sign-up layout: a calm form column, and (from lg) a brand panel showing the actual product.
+ * Sign-in/sign-up layout: a calm form column, and (from lg) a brand panel with what the product guarantees.
  * The form is the only thing on a phone - no scrolling past decoration to reach the fields.
  */
 export function AuthShell({ title, description, footer, children }: AuthShellProps) {
@@ -41,7 +40,7 @@ export function AuthShell({ title, description, footer, children }: AuthShellPro
         </header>
 
         <main id="main" className="mx-auto flex w-full max-w-[25rem] flex-1 flex-col justify-center py-10 animate-rise">
-          <h1 className="text-[1.875rem] leading-tight font-semibold tracking-[-0.025em]">{title}</h1>
+          <h1 className="text-[2rem] leading-tight font-semibold tracking-[-0.04em]">{title}</h1>
           <p className="mt-2 text-foreground-soft">{description}</p>
           <div className="mt-8">{children}</div>
           <p className="mt-8 text-center text-sm text-muted-foreground">{footer}</p>
@@ -52,20 +51,28 @@ export function AuthShell({ title, description, footer, children }: AuthShellPro
         </p>
       </div>
 
-      <aside className="relative hidden overflow-hidden border-s border-border bg-surface-sunken lg:flex lg:flex-col lg:justify-center lg:px-14">
-        <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative max-w-lg">
-          <p className="font-display text-[2.5rem] leading-[1.05] font-medium tracking-[-0.025em]">{siteConfig.tagline}</p>
-          <ul className="mt-6 space-y-2.5 text-foreground-soft">
-            {["Everything your team needs, in one place", "Changes appear for everyone instantly", "Works beautifully on any phone"].map((t) => (
-              <li key={t} className="flex items-center gap-2.5">
-                <CheckCircle weight="fill" className="size-[1.125rem] text-primary" aria-hidden="true" />
-                {t}
-              </li>
-            ))}
-          </ul>
+      <aside className="relative m-3 hidden overflow-hidden rounded-[1.75rem] bg-foreground text-background lg:flex lg:flex-col lg:justify-between lg:p-14">
+        <div className="pointer-events-none absolute inset-0 [background:radial-gradient(70%_60%_at_100%_0%,color-mix(in_oklch,var(--primary)_60%,transparent),transparent_70%),radial-gradient(50%_50%_at_0%_100%,color-mix(in_oklch,var(--primary)_30%,transparent),transparent_70%)]" aria-hidden="true" />
+        <div className="relative">
+          <p className="max-w-md text-[2.75rem] leading-[1] font-semibold tracking-[-0.05em] text-balance">{siteConfig.tagline}</p>
+          <p className="mt-5 max-w-md text-lg text-background/70">Sign in with one of the demo accounts to see each role.</p>
         </div>
-        <ProductFrame className="relative mt-12 -me-40 w-[150%] max-w-none origin-top-left scale-[0.82] rtl:origin-top-right" />
+        <ul className="relative grid gap-3">
+          {[
+            { icon: Timer, t: "The server keeps the time", d: "Refresh or switch device - the deadline doesn't move." },
+            { icon: CloudCheck, t: "Answers save as you go", d: "Offline answers wait on the device and sync later." },
+            { icon: LockKey, t: "Keys stay on the server", d: "Correct answers are never sent to the browser." },
+            { icon: SealCheck, t: "Verifiable results", d: "Every report carries a code anyone can check." },
+          ].map((x, i) => (
+            <li key={x.t} className="flex items-start gap-4 rounded-2xl border border-background/10 bg-background/[0.06] p-4 backdrop-blur-xl animate-[rise_600ms_var(--ease-out)_backwards]" style={{ animationDelay: `${200 + i * 90}ms` }}>
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-background/10"><x.icon weight="duotone" className="size-5" /></span>
+              <span>
+                <b className="block font-semibold">{x.t}</b>
+                <span className="text-sm text-background/65">{x.d}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
       </aside>
     </div>
   );

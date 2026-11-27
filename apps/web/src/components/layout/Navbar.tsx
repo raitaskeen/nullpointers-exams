@@ -10,14 +10,14 @@ import { useAuth } from "@/lib/auth-context";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
-/** Public navigation: transparent at the top, a hairline + surface once the page scrolls. */
+/** Floating glass navigation: a pill that settles onto a frosted surface once the page scrolls. */
 export function Navbar() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -32,45 +32,42 @@ export function Navbar() {
 
   const actions = user ? (
     <Button render={<Link href="/app" />} size="sm">
-      Open app
-      <ArrowRight className="rtl:rotate-180" />
+      Open Invigil <ArrowRight className="rtl:rotate-180" />
     </Button>
   ) : (
     <>
       <Button variant="ghost" size="sm" render={<Link href="/login" />}>
-        Log in
+        Sign in
       </Button>
-      <Button size="sm" render={<Link href="/register" />}>
-        Start free
+      <Button size="sm" render={<Link href="/login" />}>
+        Try the demo
       </Button>
     </>
   );
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-40 border-b transition-[background-color,border-color] duration-200",
-        open
-          ? "border-border bg-background" // no backdrop-filter while open: it would trap the fixed menu inside the header
-          : scrolled
-            ? "border-border bg-background/90 backdrop-blur-md"
+    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-5">
+      <div
+        className={cn(
+          "mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 rounded-2xl border ps-4 pe-2 transition-[background-color,border-color,box-shadow] duration-500 ease-[var(--ease-out)]",
+          scrolled || open
+            ? "border-[var(--glass-border)] bg-[var(--glass-strong)] shadow-[var(--glass-edge),0_8px_30px_-12px_oklch(0.2_0.02_262/0.22)] backdrop-blur-2xl backdrop-saturate-150"
             : "border-transparent bg-transparent",
-      )}
-    >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        )}
+      >
         <Link href="/" className="rounded-md" aria-label={`${siteConfig.productName} home`}>
           <Logo />
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+        <nav aria-label="Main" className="hidden items-center gap-0.5 md:flex">
           {siteConfig.nav.map((item) => (
-            <a
+            <Link
               key={item.href}
               href={item.href}
-              className="rounded-md px-3 py-2 text-sm text-foreground-soft transition-colors hover:bg-muted hover:text-foreground"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-foreground-soft transition-colors hover:bg-foreground/5 hover:text-foreground"
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -81,34 +78,22 @@ export function Navbar() {
 
         <div className="flex items-center gap-1 md:hidden">
           <Preferences />
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            aria-controls="mobile-nav"
-            onClick={() => setOpen((v) => !v)}
-          >
+          <Button variant="ghost" size="icon-sm" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((v) => !v)}>
             {open ? <X /> : <List />}
           </Button>
         </div>
       </div>
 
       {open && (
-        <div id="mobile-nav" className="fixed inset-x-0 top-16 bottom-0 z-40 bg-background px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:hidden animate-[fade-in_160ms_ease-out_backwards]">
+        <div id="mobile-nav" className="fixed inset-x-3 top-[4.75rem] z-40 rounded-2xl border border-[var(--glass-border)] bg-popover p-4 shadow-lg md:hidden animate-[rise_240ms_var(--ease-out)_backwards]">
           <nav aria-label="Mobile" className="flex flex-col">
             {siteConfig.nav.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="border-b border-border py-4 text-lg font-medium"
-              >
+              <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className="border-b border-border py-3.5 text-base font-medium last:border-0">
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
-          <div className="mt-6 grid gap-2 [&>*]:w-full">{actions}</div>
+          <div className="mt-4 grid gap-2 [&>*]:w-full">{actions}</div>
         </div>
       )}
     </header>
