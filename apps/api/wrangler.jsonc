@@ -1,47 +1,75 @@
 {
-  "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "nullpointers-exams",
-  "account_id": "8b74b979f2f33cfb330e7070e1446289",
-  "main": "src/index.ts",
-  "compatibility_date": "2026-08-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "observability": { "enabled": true },
-
-  // Production values. Local dev overrides these from .dev.vars (see .dev.vars.example).
-  // WEB_ORIGINS: comma-separated list of browser origins allowed to call the API (the Vercel URL).
-  "vars": {
-    "ENVIRONMENT": "production",
-    "WEB_ORIGINS": "",
-    "PUBLIC_API_URL": ""
-  },
-
-  // The static Next.js export is served by this same Worker: one origin for site, API and WebSockets.
-  "assets": {
-    "directory": "../web/out",
-    "binding": "ASSETS",
-    "not_found_handling": "404-page",
-    "html_handling": "auto-trailing-slash",
-    "run_worker_first": ["/api/*", "/ws/*"]
-  },
-
-  // `bun run cf:setup` creates the remote database and writes its real id here.
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "nullpointers-db",
-      "database_id": "b0762ce1-45ef-424e-b1b0-cd46957f547b",
-      "migrations_dir": "migrations"
-    }
-  ],
-
-  "durable_objects": {
-    "bindings": [{ "name": "REALTIME", "class_name": "RealtimeRoom" }]
-  },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RealtimeRoom"] }],
-
-  // Brute-force protection on login/register: 10 attempts per minute per IP+email.
-  "ratelimits": [
-    { "name": "AUTH_LIMITER", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } },
-    { "name": "AI_LIMITER", "namespace_id": "1002", "simple": { "limit": 20, "period": 60 } }
-  ]
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "nullpointers-exams",
+	"account_id": "8b74b979f2f33cfb330e7070e1446289",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-08-01",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"observability": {
+		"enabled": true
+	},
+	// Production values. Local dev overrides these from .dev.vars (see .dev.vars.example).
+	// WEB_ORIGINS: comma-separated list of browser origins allowed to call the API (the Vercel URL).
+	"vars": {
+		"ENVIRONMENT": "production",
+		"WEB_ORIGINS": "",
+		"PUBLIC_API_URL": "https://nullpointers-exams.np-api.workers.dev"
+	},
+	// The static Next.js export is served by this same Worker: one origin for site, API and WebSockets.
+	"assets": {
+		"directory": "../web/out",
+		"binding": "ASSETS",
+		"not_found_handling": "404-page",
+		"html_handling": "auto-trailing-slash",
+		"run_worker_first": [
+			"/api/*",
+			"/ws/*"
+		]
+	},
+	// `bun run cf:setup` creates the remote database and writes its real id here.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "nullpointers-db",
+			"database_id": "e759f31d-b86f-44fb-a58d-a180cca692e4",
+			"migrations_dir": "migrations"
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "REALTIME",
+				"class_name": "RealtimeRoom"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"RealtimeRoom"
+			]
+		}
+	],
+	// Brute-force protection on login/register: 10 attempts per minute per IP+email.
+	"ratelimits": [
+		{
+			"name": "AUTH_LIMITER",
+			"namespace_id": "1001",
+			"simple": {
+				"limit": 10,
+				"period": 60
+			}
+		},
+		{
+			"name": "AI_LIMITER",
+			"namespace_id": "1002",
+			"simple": {
+				"limit": 20,
+				"period": 60
+			}
+		}
+	]
 }

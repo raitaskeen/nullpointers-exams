@@ -30,7 +30,7 @@ jobs:
       - name: API tests (real Workers runtime + D1 + Durable Objects)
         run: bun run test
 
-      - name: Web production build
+      - name: Static site build
         run: bun run build
 
       - name: Dependency audit (high+)
@@ -41,11 +41,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Real browsers (desktop + phone) against a production build and a local Worker + D1:
-  # journeys, zero console errors, axe WCAG A/AA, no sideways scroll down to 320px.
+  # Real browsers (desktop + phone) against the production build served the way production serves it: one local
+  # Worker (wrangler dev) with the static export, the API and WebSockets on one origin, a fresh D1 and the demo data.
+  # Checks journeys, zero console errors, axe WCAG A/AA and no sideways scroll down to 320px.
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      E2E_BASE_URL: http://127.0.0.1:8787
+      ADMIN_PASSWORD: Admin@Demo2026 # the public demo account from the seed (README), not a secret
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -55,33 +59,33 @@ jobs:
       - run: bun x playwright install --with-deps chromium
         working-directory: apps/web
 
-      - name: Local API config + database
+      - name: Local Worker config, database and demo data
         working-directory: apps/api
         run: |
           cp .dev.vars.example .dev.vars
           sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$(openssl rand -hex 32)/" .dev.vars
           bun x wrangler d1 migrations apply DB --local
           bun scripts/seed.ts --local
+          bun scripts/seed-demo.ts --local
 
-      - name: Build web
+      - name: Build the static site
         run: bun run build
 
-      - name: Start API and web
+      - name: Start the Worker (site + API + WebSockets)
         run: |
-          (cd apps/api && bun x wrangler dev --port 8787 --ip 127.0.0.1 > /tmp/api.log 2>&1 &)
-          (cd apps/web && bun x next start --port 3000 > /tmp/web.log 2>&1 &)
+          (cd apps/api && bun x wrangler dev --port 8787 --ip 127.0.0.1 > /tmp/worker.log 2>&1 &)
           for i in $(seq 1 60); do
-            curl -sf http://127.0.0.1:8787/api/health > /dev/null && curl -sf http://localhost:3000/ > /dev/null && exit 0
+            curl -sf "$E2E_BASE_URL/api/health" > /dev/null && curl -sf "$E2E_BASE_URL/" > /dev/null && exit 0
             sleep 2
           done
-          cat /tmp/api.log /tmp/web.log; exit 1
+          cat /tmp/worker.log; exit 1
 
       - name: Playwright
         working-directory: apps/web
         run: bun x playwright test
 
       - name: Smoke
-        run: bun run smoke
+        run: bun run smoke -- "$E2E_BASE_URL"
 
       - name: Upload report on failure
         if: failure()
@@ -91,4 +95,5 @@ jobs:
           path: |
             apps/web/playwright-report
             apps/web/test-results
+            /tmp/worker.log
           retention-days: 7

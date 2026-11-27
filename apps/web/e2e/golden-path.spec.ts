@@ -8,6 +8,8 @@ import { CANDIDATE_STATE, EXAMINER_STATE, expect, expectAccessible, expectNoHori
 test.describe("public", () => {
   test("landing page explains the product and is accessible", async ({ page, errors }) => {
     void errors;
+    // The hero fades in; with reduced motion it renders final, so axe measures real contrast, not a mid-fade frame.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Exams that hold up under pressure");
     await expect(page.getByRole("link", { name: "Open the live demo" }).first()).toBeVisible();
