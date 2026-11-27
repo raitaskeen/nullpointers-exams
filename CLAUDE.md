@@ -74,7 +74,7 @@ docs/                runbook, rubric checklist, case study, architecture/ERD, pi
 | `bun run freeze <ISO time>` | block pushes from the freeze moment |
 | `bun run cf:setup -- --web <vercel-url>` | one-time Cloudflare provisioning (see `deploy` skill) |
 
-Local accounts after setup: `admin@nullpointers.dev` / `Admin@12345` and `user@nullpointers.dev` / `User@12345` (dev only; production admin password comes from the `ADMIN_PASSWORD` secret).
+Accounts after setup (local and production are the same demo set, see README): examiner `ayesha.khan@nullpointers.dev` / `Examiner@Demo2026`, candidate `hamza.iqbal@student.nullpointers.dev` / `Candidate@Demo2026`, admin `admin@nullpointers.dev` / `Admin@Demo2026`. Already set up before 27 Nov? Run `cd apps/api && bun run demo:local` once.
 
 ## Status
 

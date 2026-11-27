@@ -1,6 +1,6 @@
 /**
  * Idempotent seed: syncs roles + permissions from @np/shared and upserts the admin account.
- *   bun scripts/seed.ts --local                     (dev: admin@nullpointers.dev / Admin@12345, plus user@nullpointers.dev / User@12345)
+ *   bun scripts/seed.ts --local                     (dev: admin@nullpointers.dev / Admin@Demo2026; run seed-demo.ts for the other demo accounts)
  *   ADMIN_PASSWORD=... bun scripts/seed.ts --remote  (production: password is required, never defaulted, never printed)
  * Safe to re-run any time - `bun run gen` re-runs it so a new resource's permissions exist immediately.
  */
@@ -16,7 +16,7 @@ const remote = process.argv.includes("--remote");
 const target = remote ? "--remote" : "--local";
 
 const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@nullpointers.dev").toLowerCase();
-const adminPassword = process.env.ADMIN_PASSWORD ?? (remote ? "" : "Admin@12345");
+const adminPassword = process.env.ADMIN_PASSWORD ?? (remote ? "" : "Admin@Demo2026");
 if (!passwordSchema.safeParse(adminPassword).success) {
   console.error(
     remote
@@ -27,7 +27,6 @@ if (!passwordSchema.safeParse(adminPassword).success) {
 }
 
 const users: SeedUser[] = [{ email: adminEmail, fullName: "Admin", password: adminPassword, role: "admin" }];
-if (!remote) users.push({ email: "user@nullpointers.dev", fullName: "Demo User", password: "User@12345", role: "user" });
 
 const dir = mkdtempSync(join(tmpdir(), "np-seed-"));
 const file = join(dir, "seed.sql");

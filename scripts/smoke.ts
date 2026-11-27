@@ -7,7 +7,7 @@
  */
 const base = (process.argv[2] ?? "http://localhost:3000").replace(/\/$/, "");
 const email = process.env.ADMIN_EMAIL ?? "admin@nullpointers.dev";
-const password = process.env.ADMIN_PASSWORD ?? (base.includes("localhost") ? "Admin@12345" : "");
+const password = process.env.ADMIN_PASSWORD ?? (base.includes("localhost") ? "Admin@Demo2026" : "");
 let failures = 0;
 
 async function check(label: string, fn: () => Promise<string | void>) {

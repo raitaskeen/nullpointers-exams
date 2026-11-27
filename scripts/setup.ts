@@ -31,11 +31,15 @@ if (!existsSync(devVars)) {
 }
 
 step("Apply local database migrations", ["x", "wrangler", "d1", "migrations", "apply", "DB", "--local"], API);
-step("Seed roles, permissions and demo accounts", ["scripts/seed.ts", "--local"], API);
+step("Seed roles, permissions and the admin", ["scripts/seed.ts", "--local"], API);
+step("Load demo accounts and exams (same as production)", ["scripts/seed-demo.ts", "--local"], API);
 step("Enable git hooks (push freeze guard)", ["config", "core.hooksPath", ".githooks"], ROOT, "git");
 
 console.log(`
   Ready.  bun run dev   ->  web http://localhost:3000   api http://localhost:8787
 
-  Local accounts:  admin@nullpointers.dev / Admin@12345    user@nullpointers.dev / User@12345
+  Demo accounts (same as production, see README):
+    Examiner  ayesha.khan@nullpointers.dev / Examiner@Demo2026
+    Candidate hamza.iqbal@student.nullpointers.dev / Candidate@Demo2026
+    Admin     admin@nullpointers.dev / Admin@Demo2026
 `);

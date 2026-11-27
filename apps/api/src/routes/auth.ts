@@ -16,12 +16,17 @@ async function rateLimit(c: Context<AppEnv>, email: string) {
   if (result && !result.success) throw AppError.tooMany();
 }
 
-/** httpOnly: unreadable by JS (XSS can't steal it). SameSite=Lax + Secure: never sent cross-site or over HTTP. */
+/**
+ * httpOnly: unreadable by JS (XSS can't steal it). SameSite=Lax + Secure: never sent cross-site or over HTTP.
+ * Only local development drops Secure, so a teammate can open the dev server over plain http on the LAN
+ * (browsers silently discard Secure cookies on http origins other than localhost, which looked like "login fails").
+ */
+const secureCookie = (c: Context<AppEnv>) => c.env.ENVIRONMENT !== "development";
 async function startSession(c: Context<AppEnv>, userId: number, tokenVersion: number) {
   const token = await signSession(userId, tokenVersion, assertSecret(c.env.JWT_SECRET));
   setCookie(c, SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: true,
+    secure: secureCookie(c),
     sameSite: "Lax",
     path: "/",
     maxAge: SESSION_TTL_SECONDS,
@@ -58,13 +63,13 @@ export const authRoutes = new Hono<AppEnv>()
     }
   })
   .post("/logout", (c) => {
-    deleteCookie(c, SESSION_COOKIE, { path: "/", secure: true });
+    deleteCookie(c, SESSION_COOKIE, { path: "/", secure: secureCookie(c) });
     return c.body(null, 204);
   })
   /** Revokes every session for this user on every device. */
   .post("/logout-all", requireAuth, async (c) => {
     await new UserService(c.get("db")).bumpTokenVersion(c.get("user")!.id);
-    deleteCookie(c, SESSION_COOKIE, { path: "/", secure: true });
+    deleteCookie(c, SESSION_COOKIE, { path: "/", secure: secureCookie(c) });
     audit(c, "logout_all", "users", c.get("user")!.id);
     return c.body(null, 204);
   })

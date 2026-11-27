@@ -17,6 +17,8 @@ const config: NextConfig = {
   experimental: { optimizePackageImports: ["@phosphor-icons/react", "recharts"] },
   ...(isDev
     ? {
+        // Let teammates open the dev server from another machine on the same network (http://10.x / 192.168.x).
+        allowedDevOrigins: ["10.*.*.*", "192.168.*.*", "172.16.*.*", "172.17.*.*", "172.18.*.*", "172.19.*.*", "172.20.*.*", "*.local"],
         async rewrites() {
           return [{ source: "/api/:path*", destination: `${API_ORIGIN}/api/:path*` }];
         },
