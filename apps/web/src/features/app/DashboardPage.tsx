@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   ArrowRight, Broadcast, CalendarBlank, CheckCircle, ClipboardText, Clock, Hourglass, Plus, Scales, SealCheck, Warning,
@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { api, apiErrorMessage } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import {
-  PHASE_LABEL, PHASE_TONE, fmtDateTime, fmtMarks, fmtTime, fmtWindow, pct, until, type Dispute, type ExamListRow, type MyExam,
+  PHASE_LABEL, PHASE_TONE, type Analytics, fmtDateTime, fmtMarks, fmtTime, fmtWindow, pct, until, type Dispute, type ExamListRow, type MyExam,
 } from "@/lib/exams";
 import { cn } from "@/lib/utils";
 
@@ -179,6 +179,8 @@ function ExaminerDashboard() {
               )}
             </Panel>
 
+            <RecentResults exams={list} />
+
             {isAdmin && (
               <Panel title="Platform" action={<Link href="/app/users" className="text-sm font-medium text-primary hover:underline">People</Link>}>
                 <dl className="grid grid-cols-3 gap-4 text-center">
@@ -192,6 +194,34 @@ function ExaminerDashboard() {
         </div>
       )}
     </div>
+  );
+}
+
+/** Average and pass rate of finished exams, from the same analytics the Results tab uses. */
+function RecentResults({ exams }: { exams: ExamListRow[] }) {
+  const finished = exams.filter((e) => e.counts.submitted > 0 && (e.phase === "ended" || e.phase === "completed" || e.resultsPublished)).slice(0, 5);
+  const stats = useQueries({ queries: finished.map((e) => ({ queryKey: ["exam", e.id, "analytics"], queryFn: () => api<Analytics>(`/exams/${e.id}/analytics`), staleTime: 60_000 })) });
+  if (!finished.length) return null;
+  return (
+    <Panel title="Recent results" description="Average score, with the pass rate underneath.">
+      <ul className="space-y-5">
+        {finished.map((e, i) => {
+          const s = stats[i]?.data?.summary;
+          return (
+            <li key={e.id}>
+              <Link href={`/app/exams/view?id=${e.id}&tab=results`} className="group block">
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="truncate font-medium group-hover:underline">{e.title}</span>
+                  <span className="shrink-0 font-semibold tabular-nums">{s ? `${s.meanPercent}%` : "–"}</span>
+                </div>
+                <Meter className="mt-2 h-2" value={s?.meanPercent ?? 0} label={`${e.title} average`} />
+                <p className="mt-1.5 text-xs text-muted-foreground tabular-nums">{s ? `${s.passRate}% passed · ${s.submitted} submitted${e.resultsPublished ? " · published" : ""}` : "Loading…"}</p>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </Panel>
   );
 }
 

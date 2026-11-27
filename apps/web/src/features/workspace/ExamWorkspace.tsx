@@ -85,9 +85,9 @@ function SaveChip({ status, pending, online }: { status: SaveStatus; pending: nu
     error: { icon: WarningCircle, text: pending ? `Retrying · ${pending} waiting` : "Couldn't save one answer", cls: "bg-danger-soft text-danger" },
   }[s];
   return (
-    <span role="status" aria-live="polite" className={cn("hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-300 md:flex", conf.cls)}>
+    <span role="status" aria-live="polite" title={conf.text} className={cn("flex shrink-0 items-center gap-1.5 rounded-full p-1.5 text-xs font-medium transition-colors duration-300 md:px-2.5 md:py-1", conf.cls)}>
       <conf.icon weight="bold" className={cn("size-3.5", s === "saving" && "animate-spin")} aria-hidden="true" />
-      {conf.text}
+      <span className="sr-only md:not-sr-only">{conf.text}</span>
     </span>
   );
 }
