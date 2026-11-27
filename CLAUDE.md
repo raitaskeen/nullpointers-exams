@@ -1,4 +1,6 @@
-# NullPointers - Web-e-Thon Starter Kit
+# NullPointers - Invigil (Secure Examination Management System)
+
+> **Current state (27 Nov):** the starter kit below became **Invigil**. Deployed as ONE Cloudflare Worker (static Next.js export + Hono API + WebSockets), live at https://nullpointers-exams.np-api.workers.dev. README has demo accounts; PROGRESS.md (top entry) has what is built. Where this file says Vercel, read Cloudflare Workers Assets.
 
 ## What this repo is
 

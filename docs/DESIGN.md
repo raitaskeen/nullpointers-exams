@@ -1,5 +1,7 @@
 # Design system
 
+> **Update 27 Nov (Invigil):** type is **Geist** (UI and display) + **Geist Mono**; the app is **English only**; translucent "glass" is allowed on buttons, the floating nav and sticky bars only, never on cards; no italics anywhere (enforced in globals.css). Everything below still applies otherwise.
+
 The product should read as a calm, expensive, trustworthy tool - the Linear/Stripe/Vercel family - and never as an AI-generated template. This file is the rulebook; `apps/web/src/theme/tokens.css` and `app/globals.css` are the implementation.
 
 ## Principles

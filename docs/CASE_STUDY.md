@@ -1,4 +1,4 @@
-# Case Study Analysis - Secure Examination Management System
+# Case Study Analysis - Invigil, a Secure Examination Management System
 
 Technoverse 5.0 Web-e-Thon, 27 November 2026. Source: "Web-e-Thon Problem Statement" (7 pages) + final competition guide.
 
