@@ -40,13 +40,25 @@ async function checkTopic(c: Context<AppEnv>, topic: string) {
   if (getResource(topic) && !user.permissions.includes(`${topic}:read`)) throw AppError.forbidden();
 }
 
+/**
+ * Where the browser should open the socket. Behind the Next dev proxy (x-forwarded-host set) sockets go straight
+ * to PUBLIC_API_URL, because the proxy can't carry WebSockets. Otherwise (production, wrangler dev, a Cloudflare
+ * tunnel) the socket goes back to the exact host and scheme the browser used for this request.
+ */
+function wsBase(c: Context<AppEnv>) {
+  const url = new URL(c.req.url);
+  if (c.req.header("x-forwarded-host") && c.env.PUBLIC_API_URL) return c.env.PUBLIC_API_URL.replace(/^http/, "ws").replace(/\/$/, "");
+  const https = (c.req.header("x-forwarded-proto") ?? url.protocol.replace(":", "")) === "https";
+  return `${https ? "wss" : "ws"}://${url.host}`;
+}
+
 /** Step 1 (cookie-authenticated, same origin): get a 60-second ticket for one topic. */
 export const realtimeRoutes = new Hono<AppEnv>().get("/ticket", requireAuth, async (c) => {
   const user = c.get("user")!;
   const topic = c.req.query("topic") ?? "";
   await checkTopic(c, topic);
   const { ticket, expiresIn } = await signWsTicket(user.id, topic, assertSecret(c.env.JWT_SECRET));
-  const base = (c.env.PUBLIC_API_URL || new URL(c.req.url).origin).replace(/^http/, "ws");
+  const base = wsBase(c);
   const body: RealtimeTicket = { ticket, expiresIn, url: `${base}/ws/${topic}?ticket=${encodeURIComponent(ticket)}` };
   return c.json(body);
 });

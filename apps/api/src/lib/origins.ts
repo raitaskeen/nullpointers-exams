@@ -12,5 +12,12 @@ export function allowedOrigins(env: Pick<Bindings, "WEB_ORIGINS">): string[] {
 /** The site and API share one origin in production, so the Worker's own origin is always trusted. */
 export function isAllowedOrigin(c: Context, origin: string | undefined): boolean {
   if (!origin) return false;
-  return origin === new URL(c.req.url).origin || allowedOrigins(c.env as Bindings).includes(origin);
+  // Compare hosts: behind a TLS-terminating tunnel the Worker sees http:// while the browser sends https://.
+  let host: string;
+  try {
+    host = new URL(origin).host;
+  } catch {
+    return false;
+  }
+  return host === new URL(c.req.url).host || allowedOrigins(c.env as Bindings).includes(origin);
 }
