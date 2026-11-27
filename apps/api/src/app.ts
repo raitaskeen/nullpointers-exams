@@ -9,7 +9,7 @@ import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./db/schema";
 import type { AppEnv } from "./env";
 import { AppError } from "./lib/errors";
-import { allowedOrigins } from "./lib/origins";
+import { isAllowedOrigin } from "./lib/origins";
 import { loadUser } from "./middleware/auth";
 import { activityRoutes } from "./routes/activity";
 import { aiRoutes } from "./routes/ai";
@@ -25,8 +25,8 @@ export const app = new Hono<AppEnv>();
 app.use(requestId());
 // HSTS, nosniff, frame-deny, strict referrer, CORP... Not on /ws/*: a 101 upgrade response has immutable headers.
 app.use("/api/*", secureHeaders());
-app.use("/api/*", cors({ origin: (o, c) => (allowedOrigins(c.env).includes(o) ? o : null), credentials: true, maxAge: 600 }));
-app.use("/api/*", csrf({ origin: (o, c) => allowedOrigins(c.env).includes(o) }));
+app.use("/api/*", cors({ origin: (o, c) => (isAllowedOrigin(c, o) ? o : null), credentials: true, maxAge: 600 }));
+app.use("/api/*", csrf({ origin: (o, c) => isAllowedOrigin(c, o) }));
 app.use("/api/*", bodyLimit({ maxSize: 1024 * 1024, onError: () => { throw new AppError(413, "too_large", "Request body is too large."); } }));
 app.use(async (c, next) => {
   c.set("db", drizzle(c.env.DB, { schema, casing: "snake_case" }));

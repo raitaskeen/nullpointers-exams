@@ -8,7 +8,7 @@ import { AppError } from "../lib/errors";
 import { assertSecret, signWsTicket, verifyWsTicket } from "../lib/tokens";
 import { requireAuth } from "../middleware/auth";
 import { roomFor } from "../realtime/publish";
-import { allowedOrigins } from "../lib/origins";
+import { isAllowedOrigin } from "../lib/origins";
 
 /**
  * Who may listen to which topic:
@@ -56,7 +56,7 @@ export const wsRoutes = new Hono<AppEnv>().get("/:topic", async (c) => {
   if (c.req.header("upgrade")?.toLowerCase() !== "websocket") throw new AppError(426, "upgrade_required", "WebSocket only.");
   // Cross-site WebSocket hijacking guard: browsers always send Origin on upgrades.
   const origin = c.req.header("origin");
-  if (origin && !allowedOrigins(c.env).includes(origin)) throw AppError.forbidden("Origin not allowed.");
+  if (origin && !isAllowedOrigin(c, origin)) throw AppError.forbidden("Origin not allowed.");
 
   const topic = c.req.param("topic");
   const claims = await verifyWsTicket(c.req.query("ticket") ?? "", assertSecret(c.env.JWT_SECRET));
