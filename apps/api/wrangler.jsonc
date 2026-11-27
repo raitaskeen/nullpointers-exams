@@ -1,6 +1,7 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "nullpointers-exams",
+  "account_id": "8b74b979f2f33cfb330e7070e1446289",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -28,7 +29,7 @@
     {
       "binding": "DB",
       "database_name": "nullpointers-db",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "b0762ce1-45ef-424e-b1b0-cd46957f547b",
       "migrations_dir": "migrations"
     }
   ],
