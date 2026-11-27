@@ -25,12 +25,22 @@ export function AttemptStatus({ e }: { e: Pick<Enrollment, "status" | "pendingMa
   return <StatusBadge tone="info">{e.status === "expired" ? "Time ran out" : "Submitted"}</StatusBadge>;
 }
 
+/** "sana.malik22@x.edu" -> "Sana Malik": a readable default name for an account created from an email. */
+function nameFromEmail(email: string) {
+  const local = email.split("@")[0] ?? email;
+  const words = local.replace(/\d+/g, " ").split(/[._+\s-]+/).filter(Boolean);
+  const name = words.map((w) => w[0]!.toUpperCase() + w.slice(1).toLowerCase()).join(" ").trim();
+  return (name || local).slice(0, 100);
+}
+
 export function CandidatesTab({ exam }: { exam: ExamDetail }) {
   const qc = useQueryClient();
   const [emails, setEmails] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [removing, setRemoving] = useState<Enrollment | null>(null);
+  const [missing, setMissing] = useState<string[]>([]);
+  const [issued, setIssued] = useState<{ email: string; fullName: string; password: string }[]>([]);
   const list = useQuery({ queryKey: ["exam", exam.id, "enrollments"], queryFn: () => api<Enrollment[]>(`/exams/${exam.id}/enrollments`) });
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["exam", exam.id, "enrollments"] });
@@ -41,15 +51,34 @@ export function CandidatesTab({ exam }: { exam: ExamDetail }) {
     mutationFn: (list: string[]) => api<{ added: number; alreadyEnrolled: number; notFound: string[] }>(`/exams/${exam.id}/enrollments`, { method: "POST", json: { emails: list } }),
     onSuccess: (r) => {
       refresh();
-      setEmails(r.notFound.join("\n"));
-      if (r.notFound.length) setEmailError(`No active candidate account for: ${r.notFound.join(", ")}. Import them from a file to create accounts.`);
-      toast.success(`${r.added} enrolled${r.alreadyEnrolled ? ` · ${r.alreadyEnrolled} already enrolled` : ""}`);
+      setEmails("");
+      setMissing(r.notFound);
+      if (r.added || r.alreadyEnrolled) toast.success(`${r.added} enrolled${r.alreadyEnrolled ? ` · ${r.alreadyEnrolled} already enrolled` : ""}`);
+    },
+    onError: (err) => setEmailError(apiErrorMessage(err)),
+  });
+
+  /** Unknown addresses: create candidate accounts (one-time passwords shown once) and enrol them in one step. */
+  const createAndEnroll = useMutation({
+    mutationFn: (list: string[]) =>
+      api<{ created: number; errors: { row: number; message: string }[]; credentials: { email: string; fullName: string; password: string }[]; enrolled: { added: number; notFound: string[] } | null }>("/users/import", {
+        method: "POST",
+        json: { rows: list.map((email) => ({ fullName: nameFromEmail(email), email })), examId: exam.id },
+      }),
+    onSuccess: (r) => {
+      refresh();
+      setIssued(r.credentials);
+      const stillMissing = r.enrolled?.notFound ?? [];
+      setMissing([]);
+      if (stillMissing.length) setEmailError(`These addresses belong to accounts that aren't active candidates (e.g. an examiner or a deactivated account): ${stillMissing.join(", ")}`);
+      toast.success(`${r.created} account${r.created === 1 ? "" : "s"} created · ${r.enrolled?.added ?? 0} enrolled`);
     },
     onError: (err) => setEmailError(apiErrorMessage(err)),
   });
 
   const submitEmails = () => {
     setEmailError(null);
+    setMissing([]);
     const parts = [...new Set(emails.split(/[\s,;]+/).map((s) => s.trim().toLowerCase()).filter(Boolean))];
     if (!parts.length) return setEmailError("Add at least one email.");
     const bad = parts.filter((p) => !emailSchema.safeParse(p).success);
@@ -114,7 +143,7 @@ export function CandidatesTab({ exam }: { exam: ExamDetail }) {
       </Panel>
 
       <div className="space-y-6">
-        <Panel title="Enrol by email" description="One per line, or separated by commas. Accounts must already exist.">
+        <Panel title="Enrol by email" description="One per line, or separated by commas. Anyone without an account can be given one here.">
           <label htmlFor="enrol-emails" className="sr-only">Candidate emails</label>
           <textarea
             id="enrol-emails"
@@ -127,6 +156,37 @@ export function CandidatesTab({ exam }: { exam: ExamDetail }) {
             aria-describedby={emailError ? "enrol-err" : undefined}
           />
           {emailError && <p id="enrol-err" role="alert" className="mt-2 text-[0.8125rem] font-medium text-danger">{emailError}</p>}
+          {missing.length > 0 && (
+            <div className="mt-3 rounded-xl border border-warning/30 bg-warning-soft/60 p-3 text-[0.8125rem] animate-[rise_240ms_var(--ease-out)_backwards]" role="status">
+              <p className="font-medium text-foreground">No candidate account yet for:</p>
+              <ul className="mt-1 space-y-0.5 break-all text-foreground-soft">{missing.map((m) => <li key={m}>{m}</li>)}</ul>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button size="sm" onClick={() => createAndEnroll.mutate(missing)} disabled={createAndEnroll.isPending}>
+                  <UserPlus /> {createAndEnroll.isPending ? "Creating…" : `Create account${missing.length > 1 ? "s" : ""} and enrol`}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setMissing([])}>Not now</Button>
+              </div>
+            </div>
+          )}
+          {issued.length > 0 && (
+            <div className="mt-3 rounded-xl border border-success/30 bg-success-soft/60 p-3 text-[0.8125rem] animate-[rise_240ms_var(--ease-out)_backwards]" role="status">
+              <p className="font-medium text-foreground">Accounts created. Share each password privately - it is shown only now.</p>
+              <ul className="mt-2 space-y-1.5">
+                {issued.map((c) => (
+                  <li key={c.email} className="rounded-lg bg-surface px-2.5 py-1.5">
+                    <span className="block break-all text-foreground-soft">{c.email}</span>
+                    <span className="font-mono font-medium tracking-wide">{c.password}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-2 flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => saveText(toCsv(["fullName", "email", "password"], issued.map((c) => [c.fullName, c.email, c.password])), "candidate-credentials.csv")}>
+                  <DownloadSimple /> Download CSV
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setIssued([])}>Done</Button>
+              </div>
+            </div>
+          )}
           <Button className="mt-3 w-full" onClick={submitEmails} disabled={enroll.isPending}>
             <UserPlus /> {enroll.isPending ? "Enrolling…" : "Enrol"}
           </Button>
