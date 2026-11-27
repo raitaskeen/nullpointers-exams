@@ -1,0 +1,7 @@
+#!/bin/sh
+# Competition rule: any commit or Vercel build after the submission deadline = instant disqualification.
+# `bun run freeze 2026-11-29T05:30:00+05:00` writes .freeze-at; after that moment this hook refuses every push.
+# (Enabled by `bun run setup`, which sets core.hooksPath=.githooks.)
+ROOT=$(git rev-parse --show-toplevel)
+[ -f "$ROOT/.freeze-at" ] || exit 0
+exec bun "$ROOT/scripts/freeze.ts" --check

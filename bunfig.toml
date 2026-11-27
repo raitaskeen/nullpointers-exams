@@ -1,0 +1,3 @@
+[install]
+# Flat node_modules: avoids Windows path-length failures and works best with Next.js + wrangler.
+linker = "hoisted"

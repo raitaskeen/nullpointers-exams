@@ -1,0 +1,7 @@
+# Copy to .dev.vars (gitignored) for local development. Production uses `wrangler secret put JWT_SECRET`.
+ENVIRONMENT=development
+JWT_SECRET=local-dev-only-secret-change-me-at-least-32-chars
+WEB_ORIGINS=http://localhost:3000
+PUBLIC_API_URL=http://localhost:8787
+GROQ_API_KEY=
+# GROQ_MODEL=openai/gpt-oss-120b

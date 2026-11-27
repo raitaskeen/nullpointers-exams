@@ -1,0 +1,63 @@
+name: Deploy API
+
+# The web app deploys through Vercel's own Git integration (every push to main).
+# This workflow deploys the Cloudflare Worker: migrate D1 first, then ship the code that expects it.
+on:
+  push:
+    branches: [main]
+    paths: ["apps/api/**", "packages/shared/**", "bun.lock", ".github/workflows/deploy-api.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false # never cut a migration off halfway
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      # Competition rule: no deploys between the submission deadline and evaluation.
+      # Set the repo variable FREEZE_AT (e.g. 2026-11-29T05:30:00+05:00) and this job refuses to run after it.
+      - name: Freeze guard
+        if: ${{ vars.FREEZE_AT != '' }}
+        run: |
+          now=$(date -u +%s); freeze=$(date -u -d "${{ vars.FREEZE_AT }}" +%s)
+          if [ "$now" -ge "$freeze" ]; then echo "::error::Past FREEZE_AT (${{ vars.FREEZE_AT }}). Not deploying."; exit 1; fi
+
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+
+      - name: Tests must pass before anything ships
+        run: bun run test
+
+      - name: Apply D1 migrations
+        working-directory: apps/api
+        run: bun x wrangler d1 migrations apply DB --remote
+
+      - name: Deploy Worker
+        working-directory: apps/api
+        run: bun x wrangler deploy
+
+      - name: Sync roles/permissions + admin
+        working-directory: apps/api
+        env:
+          ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: bun scripts/seed.ts --remote
+
+      - name: Health check
+        run: |
+          url="${{ vars.API_URL }}/api/health"
+          for i in $(seq 1 10); do
+            if curl -sf "$url"; then echo; echo "Healthy: $url"; exit 0; fi
+            echo "waiting ($i/10)..."; sleep 3
+          done
+          echo "::error::API not healthy at $url"; exit 1

@@ -1,0 +1,30 @@
+{
+  "name": "nullpointers",
+  "private": true,
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
+  "overrides": {
+    "zod": "^4.6.7",
+    "undici": "^7.30.2",
+    "sharp": "^0.35.5"
+  },
+  "scripts": {
+    "setup": "bun scripts/setup.ts",
+    "dev": "bun run --filter '@np/api' --filter '@np/web' dev",
+    "dev:api": "bun run --filter '@np/api' dev",
+    "dev:web": "bun run --filter '@np/web' dev",
+    "gen": "bun scripts/generate.ts",
+    "db:generate": "bun run --filter '@np/api' db:generate",
+    "db:migrate": "bun run --filter '@np/api' db:migrate:local",
+    "seed": "bun run --filter '@np/api' seed:local",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun run --filter '@np/api' test",
+    "test:e2e": "bun run --filter '@np/web' test:e2e",
+    "build": "bun run --filter '@np/web' build",
+    "check": "bun run typecheck && bun run test && bun run build",
+    "smoke": "bun scripts/smoke.ts",
+    "freeze": "bun scripts/freeze.ts",
+    "cf:setup": "bun scripts/cf-setup.ts",
+    "deploy:api": "bun run --filter '@np/api' deploy"
+  }
+}

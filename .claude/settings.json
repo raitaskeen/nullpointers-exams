@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && (git diff --quiet HEAD -- PROGRESS.md 2>/dev/null && [ -n \"$(git status --porcelain -- . ':!PROGRESS.md' 2>/dev/null)\" ] && echo '{\"systemMessage\": \"Reminder: PROGRESS.md was not updated this session, but other files changed. Add a short entry so the next session (or teammate) can pick up context.\"}') || true"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); if printf '%s' \"$input\" | grep -qE 'd1 delete|wrangler delete|--remote.*(DROP|DELETE FROM)|git push.*--force'; then printf '%s' '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"ask\", \"permissionDecisionReason\": \"This touches the single shared production database/Worker or rewrites git history. Confirm the team knows before proceeding.\"}}'; elif printf '%s' \"$input\" | grep -qE 'git push|wrangler deploy|d1 migrations apply.*--remote' && [ -f \"$CLAUDE_PROJECT_DIR/.freeze-at\" ] && ! bun \"$CLAUDE_PROJECT_DIR/scripts/freeze.ts\" --check >/dev/null 2>&1; then printf '%s' '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"Submission freeze is active (.freeze-at). Pushing or deploying now can disqualify the team.\"}}'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "nullpointers-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Production values. Local dev overrides these from .dev.vars (see .dev.vars.example).
+  // WEB_ORIGINS: comma-separated list of browser origins allowed to call the API (the Vercel URL).
+  "vars": {
+    "ENVIRONMENT": "production",
+    "WEB_ORIGINS": "https://CHANGE-ME.vercel.app",
+    "PUBLIC_API_URL": "https://nullpointers-api.CHANGE-ME.workers.dev"
+  },
+
+  // `bun run cf:setup` creates the remote database and writes its real id here.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nullpointers-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [{ "name": "REALTIME", "class_name": "RealtimeRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RealtimeRoom"] }],
+
+  // Brute-force protection on login/register: 10 attempts per minute per IP+email.
+  "ratelimits": [
+    { "name": "AUTH_LIMITER", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } },
+    { "name": "AI_LIMITER", "namespace_id": "1002", "simple": { "limit": 20, "period": 60 } }
+  ]
+}

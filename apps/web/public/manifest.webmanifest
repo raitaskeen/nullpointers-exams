@@ -1,0 +1,10 @@
+{
+  "name": "NullPointers",
+  "short_name": "NullPointers",
+  "description": "The operations workspace your whole team can trust.",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#fbfbfd",
+  "theme_color": "#2f5bd3",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

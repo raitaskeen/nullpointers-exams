@@ -1,0 +1,299 @@
+@import "tailwindcss";
+@import "../theme/tokens.css";
+
+/* Self-hosted variable fonts (no runtime font CDN). Urdu loads only when Arabic-script text appears
+   (unicode-range), so it costs nothing for English visitors. */
+@import "@fontsource-variable/hanken-grotesk/index.css";
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "@fontsource-variable/newsreader/opsz-italic.css";
+@import "@fontsource-variable/jetbrains-mono/index.css";
+@import "@fontsource/noto-nastaliq-urdu/400.css";
+@import "@fontsource/noto-nastaliq-urdu/600.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Hanken Grotesk Variable", "Noto Nastaliq Urdu", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Editorial serif for marketing display type only (Persuade surfaces). Product UI stays sans. */
+  --font-display: "Newsreader Variable", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-fade-in: fade-in 240ms var(--ease-out) backwards;
+  --animate-rise: rise 420ms var(--ease-out) backwards;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-soft: var(--foreground-soft);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-softer: var(--brand-softer);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-control-border: var(--control-border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-focus: var(--focus);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-brand: var(--shadow-brand);
+
+  --radius-md: var(--radius);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scrollbar-gutter: stable;
+    /* Browser surfaces carry the design too. */
+    accent-color: var(--primary);
+    caret-color: var(--primary);
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 22%, transparent);
+    color: var(--foreground);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+    letter-spacing: -0.018em;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+
+  a {
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+  }
+
+  /* Numbers in data line up. */
+  table,
+  .tabular,
+  time,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* RTL (Urdu): Nastaliq needs more line height and no negative tracking. */
+  [dir="rtl"] body {
+    line-height: 1.9;
+  }
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] h4 {
+    letter-spacing: 0;
+    line-height: 1.6;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  /* Inputs: quiet at rest, crisp brand ring on focus (the input's own focus indicator). */
+  [data-slot="input"],
+  [data-slot="textarea"],
+  [data-slot="native-select"] {
+    transition:
+      border-color var(--dur-fast) ease-out,
+      box-shadow var(--dur-fast) ease-out,
+      background-color var(--dur-fast) ease-out;
+  }
+
+  [data-slot="input"]:focus-visible,
+  [data-slot="textarea"]:focus-visible,
+  [data-slot="native-select"]:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    background-color: var(--surface);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 22%, transparent);
+  }
+
+  [data-slot="input"][aria-invalid="true"],
+  [data-slot="textarea"][aria-invalid="true"],
+  [data-slot="native-select"][aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+
+  [data-slot="input"][aria-invalid="true"]:focus-visible,
+  [data-slot="textarea"][aria-invalid="true"]:focus-visible,
+  [data-slot="native-select"][aria-invalid="true"]:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--danger) 22%, transparent);
+  }
+
+  /* Hairline grid used behind product shots on the landing page - a texture, not a decoration layer. */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklch, var(--border) 70%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklch, var(--border) 70%, transparent) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 80%);
+  }
+
+  /* Skeleton shimmer for loading states. */
+  .skeleton {
+    background: linear-gradient(90deg, var(--muted) 0%, color-mix(in oklch, var(--muted) 55%, var(--surface)) 50%, var(--muted) 100%);
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+  }
+
+  /* Keyboard hint chip (⌘K, Esc). */
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    height: 1.25rem;
+    min-width: 1.25rem;
+    padding-inline: 0.3rem;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    background: var(--surface);
+    color: var(--muted-foreground);
+    font: 500 0.6875rem/1 var(--font-sans);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Route transitions (View Transitions API): a short cross-fade + lift. Skipped by unsupported browsers. */
+::view-transition-old(root) {
+  animation: 140ms ease-out both fade-out;
+}
+::view-transition-new(root) {
+  animation: 260ms var(--ease-out) both rise;
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

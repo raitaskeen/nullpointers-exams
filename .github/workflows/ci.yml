@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # gitleaks scans history
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Typecheck (shared, api, web)
+        run: bun run typecheck
+
+      - name: API tests (real Workers runtime + D1 + Durable Objects)
+        run: bun run test
+
+      - name: Web production build
+        run: bun run build
+
+      - name: Dependency audit (high+)
+        run: bun audit --audit-level=high
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Real browsers (desktop + phone) against a production build and a local Worker + D1:
+  # journeys, zero console errors, axe WCAG A/AA, no sideways scroll down to 320px.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun x playwright install --with-deps chromium
+        working-directory: apps/web
+
+      - name: Local API config + database
+        working-directory: apps/api
+        run: |
+          cp .dev.vars.example .dev.vars
+          sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$(openssl rand -hex 32)/" .dev.vars
+          bun x wrangler d1 migrations apply DB --local
+          bun scripts/seed.ts --local
+
+      - name: Build web
+        run: bun run build
+
+      - name: Start API and web
+        run: |
+          (cd apps/api && bun x wrangler dev --port 8787 --ip 127.0.0.1 > /tmp/api.log 2>&1 &)
+          (cd apps/web && bun x next start --port 3000 > /tmp/web.log 2>&1 &)
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8787/api/health > /dev/null && curl -sf http://localhost:3000/ > /dev/null && exit 0
+            sleep 2
+          done
+          cat /tmp/api.log /tmp/web.log; exit 1
+
+      - name: Playwright
+        working-directory: apps/web
+        run: bun x playwright test
+
+      - name: Smoke
+        run: bun run smoke
+
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          retention-days: 7

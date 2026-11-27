@@ -1,0 +1,33 @@
+{
+  "name": "@np/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "cf-typegen": "wrangler types src/worker-configuration.d.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "seed:local": "bun scripts/seed.ts --local",
+    "seed:remote": "bun scripts/seed.ts --remote"
+  },
+  "dependencies": {
+    "@np/shared": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.23",
+    "pdf-lib": "^1.17.1",
+    "qrcode-generator": "^2.0.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.23.0",
+    "@cloudflare/workers-types": "^5.20261127.1",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1",
+    "wrangler": "^4.168.0"
+  }
+}
