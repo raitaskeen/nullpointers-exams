@@ -67,7 +67,7 @@ function Toggle({ label, hint, registration }: { label: string; hint: string; re
       <span className="relative mt-0.5 inline-flex shrink-0">
         <input type="checkbox" {...registration} className="peer sr-only" />
         <span className="h-6 w-10 rounded-full bg-muted-foreground/30 shadow-[inset_0_1px_2px_oklch(0_0_0/0.15)] transition-colors duration-300 peer-checked:bg-success peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/35" />
-        <span className="absolute top-0.5 start-0.5 size-5 rounded-full bg-white shadow-[0_1px_3px_oklch(0_0_0/0.25)] transition-transform duration-300 ease-[var(--ease-spring)] peer-checked:translate-x-4" />
+        <span className="absolute top-0.5 start-0.5 size-5 rounded-full bg-white shadow-[0_1px_3px_oklch(0_0_0/0.25)] transition-transform duration-300 ease-[var(--ease-out)] peer-checked:translate-x-4" />
       </span>
     </label>
   );

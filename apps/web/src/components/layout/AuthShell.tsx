@@ -52,7 +52,6 @@ export function AuthShell({ title, description, footer, children }: AuthShellPro
       </div>
 
       <aside className="relative m-3 hidden overflow-hidden rounded-[1.75rem] bg-foreground text-background lg:flex lg:flex-col lg:justify-between lg:p-14">
-        <div className="pointer-events-none absolute inset-0 [background:radial-gradient(70%_60%_at_100%_0%,color-mix(in_oklch,var(--primary)_60%,transparent),transparent_70%),radial-gradient(50%_50%_at_0%_100%,color-mix(in_oklch,var(--primary)_30%,transparent),transparent_70%)]" aria-hidden="true" />
         <div className="relative">
           <p className="max-w-md text-[2.75rem] leading-[1] font-semibold tracking-[-0.05em] text-balance">{siteConfig.tagline}</p>
           <p className="mt-5 max-w-md text-lg text-background/70">Sign in with one of the demo accounts to see each role.</p>
@@ -64,7 +63,7 @@ export function AuthShell({ title, description, footer, children }: AuthShellPro
             { icon: LockKey, t: "Keys stay on the server", d: "Correct answers are never sent to the browser." },
             { icon: SealCheck, t: "Verifiable results", d: "Every report carries a code anyone can check." },
           ].map((x, i) => (
-            <li key={x.t} className="flex items-start gap-4 rounded-2xl border border-background/10 bg-background/[0.06] p-4 backdrop-blur-xl animate-[rise_600ms_var(--ease-out)_backwards]" style={{ animationDelay: `${200 + i * 90}ms` }}>
+            <li key={x.t} className="flex items-start gap-4 rounded-2xl border border-background/10 bg-background/[0.05] p-4 animate-[rise_500ms_var(--ease-out)_backwards]" style={{ animationDelay: `${200 + i * 90}ms` }}>
               <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-background/10"><x.icon weight="duotone" className="size-5" /></span>
               <span>
                 <b className="block font-semibold">{x.t}</b>

@@ -104,7 +104,7 @@ export function ExamsPage() {
             <li key={e.id} className="animate-[rise_360ms_var(--ease-out)_backwards]" style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}>
               <Link
                 href={`/app/exams/view?id=${e.id}${e.phase === "ongoing" ? "&tab=monitor" : ""}`}
-                className="group grid gap-4 rounded-[var(--radius-card)] border border-border bg-card p-5 shadow-xs transition-[border-color,box-shadow,transform] duration-300 ease-[var(--ease-out)] hover:-translate-y-0.5 hover:border-border-strong hover:shadow-md md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
+                className="group grid gap-4 rounded-[var(--radius-card)] border border-border bg-card p-5 shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-border-strong hover:shadow-sm md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2.5">
@@ -134,7 +134,7 @@ export function ExamsPage() {
                       {e.counts.pendingGrading > 0 && <p className="mt-1.5 text-xs font-medium text-warning">{e.counts.pendingGrading} to grade</p>}
                     </div>
                   )}
-                  <ArrowRight className={cn("size-4 shrink-0 text-muted-foreground transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180")} aria-hidden="true" />
+                  <ArrowRight className={cn("size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground rtl:rotate-180")} aria-hidden="true" />
                 </div>
               </Link>
             </li>

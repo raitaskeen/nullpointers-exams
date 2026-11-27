@@ -52,7 +52,7 @@ export function Preferences({ className }: { className?: string }) {
                 title={`${p.label} - ${p.hint}`}
                 onClick={() => setPalette(p.id)}
                 className={cn(
-                  "grid size-8 place-items-center rounded-full border border-border transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2",
+                  "grid size-8 place-items-center rounded-full border border-border transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2",
                   palette === p.id && "ring-2 ring-foreground ring-offset-2 ring-offset-popover",
                 )}
                 style={{ background: p.swatch }}

@@ -82,7 +82,7 @@ export function Segmented<T extends string>({
     >
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-[3px] start-[3px] rounded-[0.6rem] bg-surface shadow-[var(--glass-edge),0_1px_3px_oklch(0.2_0.02_262/0.12)] transition-transform duration-300 ease-[var(--ease-spring)]"
+        className="pointer-events-none absolute inset-y-[3px] start-[3px] rounded-[0.6rem] bg-surface shadow-[var(--glass-edge),0_1px_3px_oklch(0.2_0.02_262/0.12)] transition-transform duration-300 ease-[var(--ease-out)]"
         style={{ width: `calc((100% - 6px) / ${options.length})`, transform: `translateX(calc(${index * 100}% * var(--dir, 1)))` }}
       />
       {options.map((o) => {

@@ -23,17 +23,13 @@ import { cn } from "@/lib/utils";
 
 function Greeting({ subtitle, action }: { subtitle: string; action?: React.ReactNode }) {
   const { user } = useAuth();
-  const [greeting, setGreeting] = useState("Welcome");
-  useEffect(() => {
-    const h = new Date().getHours();
-    setGreeting(h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening");
-  }, []);
+  const [today, setToday] = useState("");
+  useEffect(() => setToday(new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long" }).format(new Date())), []);
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="text-[1.75rem] leading-tight font-semibold tracking-[-0.025em] sm:text-3xl">
-          {greeting}, {user?.fullName.replace(/^(Dr\.|Mr\.|Ms\.)\s+/, "").split(" ")[0]}
-        </h1>
+        <p className="text-sm text-muted-foreground">{today}{user ? ` · ${user.fullName}` : ""}</p>
+        <h1 className="mt-1 text-[1.75rem] leading-tight font-semibold tracking-[-0.03em] sm:text-3xl">Overview</h1>
         <p className="mt-1.5 text-foreground-soft">{subtitle}</p>
       </div>
       {action}

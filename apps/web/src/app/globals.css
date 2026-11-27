@@ -108,16 +108,12 @@
 
   body {
     min-height: 100dvh;
-    /* A faint brand-tinted wash at the top of every page: gives glass surfaces something to sit on. */
-    background:
-      radial-gradient(120% 60% at 50% -10%, var(--canvas-tint), transparent 60%) no-repeat,
-      var(--background);
-    background-attachment: fixed;
+    background: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
     font-feature-settings: "ss01", "ss03", "cv01";
     font-optical-sizing: auto;
-    letter-spacing: -0.006em;
+    letter-spacing: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

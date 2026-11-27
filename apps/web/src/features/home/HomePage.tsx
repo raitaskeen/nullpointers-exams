@@ -20,10 +20,10 @@ function Reveal({ children, delay = 0, className }: { children: ReactNode; delay
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : { opacity: 0, y: 28, filter: "blur(6px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={reduce ? false : { opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.8, ease: EASE, delay }}
+      transition={{ duration: 0.6, ease: EASE, delay }}
     >
       {children}
     </motion.div>
@@ -130,9 +130,9 @@ function HeroVisual() {
   return (
     <div className="relative mx-auto mt-16 max-w-5xl sm:mt-20">
       <motion.div
-        initial={reduce ? false : { opacity: 0, y: 40, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 1.1, ease: EASE, delay: 0.25 }}
+        initial={reduce ? false : { opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: EASE, delay: 0.2 }}
       >
         <WorkspacePreview />
       </motion.div>
@@ -164,7 +164,7 @@ function PhotoBand() {
                 alt={p.alt}
                 loading="lazy"
                 decoding="async"
-                className={cn("w-full object-cover transition-transform duration-[1.2s] ease-[var(--ease-out)] group-hover:scale-[1.04]", i === 1 ? "aspect-[4/5] md:mt-10" : "aspect-[4/5]")}
+                className={cn("w-full object-cover", i === 1 ? "aspect-[4/5] md:mt-10" : "aspect-[4/5]")}
               />
               <figcaption className="absolute inset-x-3 bottom-3 rounded-2xl border border-white/20 bg-black/35 p-4 text-white backdrop-blur-xl">
                 <b className="block text-[0.9375rem] font-semibold tracking-[-0.01em]">{p.title}</b>
@@ -238,7 +238,7 @@ function Workflow() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, ease: EASE, delay: 0.06 * i }}
                 >
-                  <span className="grid size-11 place-items-center rounded-xl bg-brand-soft text-brand-ink transition-transform duration-500 ease-[var(--ease-spring)] group-hover:scale-110 group-hover:-rotate-6">
+                  <span className="grid size-11 place-items-center rounded-xl bg-brand-soft text-brand-ink">
                     <s.icon weight="duotone" className="size-[1.375rem]" />
                   </span>
                   <h3 className="mt-6 text-xl font-semibold tracking-[-0.025em]">{s.title}</h3>
@@ -508,16 +508,15 @@ export function HomePage() {
   return (
     <>
       <section className="relative overflow-hidden px-4 pt-14 pb-28 sm:px-6 sm:pt-24 sm:pb-36">
-        <div className="bg-grid pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" aria-hidden="true" />
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="text-[clamp(2.75rem,7.6vw,5.75rem)] leading-[0.95] font-semibold tracking-[-0.055em] text-balance">
             {words.map((w, i) => (
               <motion.span
                 key={i}
                 className="inline-block"
-                initial={reduce ? false : { opacity: 0, y: "0.45em", filter: "blur(10px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{ duration: 0.9, ease: EASE, delay: 0.08 + i * 0.06 }}
+                initial={reduce ? false : { opacity: 0, y: "0.25em" }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: EASE, delay: i * 0.03 }}
               >
                 {w}
                 {i < words.length - 1 && " "}
@@ -558,7 +557,6 @@ export function HomePage() {
       <section className="px-4 pb-24 sm:px-6">
         <Reveal className="mx-auto max-w-6xl">
           <div className="relative overflow-hidden rounded-[2rem] bg-foreground px-7 py-14 text-background sm:px-14 sm:py-20">
-            <div className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(60%_80%_at_100%_0%,color-mix(in_oklch,var(--primary)_55%,transparent),transparent_70%)]" aria-hidden="true" />
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-xl">
                 <h2 className="text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.02] font-semibold tracking-[-0.045em]">See a live exam in under a minute.</h2>

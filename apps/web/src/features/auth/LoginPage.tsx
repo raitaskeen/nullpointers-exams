@@ -124,10 +124,10 @@ function DemoAccounts({ onPick, disabled }: { onPick: (email: string, password: 
             type="button"
             disabled={disabled}
             onClick={() => onPick(d.email, d.password)}
-            className="group flex flex-col items-start gap-2 rounded-xl border border-[var(--glass-border)] bg-[var(--glass)] p-3 text-start shadow-[var(--glass-edge),var(--glass-shadow)] backdrop-blur-xl transition-all duration-300 ease-[var(--ease-out)] hover:-translate-y-0.5 hover:border-primary/40 hover:bg-[var(--glass-strong)] active:scale-[0.98] disabled:opacity-50 animate-[rise_500ms_var(--ease-out)_backwards]"
+            className="group flex flex-col items-start gap-2 rounded-xl border border-border bg-surface p-3 text-start shadow-xs transition-all duration-300 ease-[var(--ease-out)] hover:border-primary/40 hover:bg-[var(--glass-strong)] active:scale-[0.98] disabled:opacity-50 animate-[rise_500ms_var(--ease-out)_backwards]"
             style={{ animationDelay: `${120 + i * 70}ms` }}
           >
-            <span className="grid size-8 place-items-center rounded-lg bg-brand-soft text-brand-ink transition-transform duration-500 ease-[var(--ease-spring)] group-hover:scale-110">
+            <span className="grid size-8 place-items-center rounded-lg bg-brand-soft text-brand-ink">
               <d.icon weight="duotone" className="size-[1.125rem]" />
             </span>
             <span className="min-w-0">
