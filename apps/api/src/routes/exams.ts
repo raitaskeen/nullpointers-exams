@@ -66,7 +66,10 @@ export const questionRoutes = new Hono<AppEnv>()
 // ---- Exams (examiner) -------------------------------------------------------------------------------------------
 export const examRoutes = new Hono<AppEnv>()
   .use(requirePermission("exams:manage"))
-  .get("/", async (c) => c.json(await new ExamService(db(c), u(c)).list()))
+  .get("/", async (c) => {
+    await new AttemptService(db(c), u(c)).finalizeExpired();
+    return c.json(await new ExamService(db(c), u(c)).list());
+  })
   .post("/", async (c) => {
     const row = await new ExamService(db(c), u(c)).create(await parseJson(c, examInputSchema));
     audit(c, "create", "exams", row.id);
@@ -116,7 +119,12 @@ export const examRoutes = new Hono<AppEnv>()
     await new ExamService(db(c), u(c)).unenroll(parseId(c), parseId(c, "candidateId"));
     return c.body(null, 204);
   })
-  .get("/:id{[0-9]+}/monitor", async (c) => c.json(await new ExamService(db(c), u(c)).monitor(parseId(c))))
+  .get("/:id{[0-9]+}/monitor", async (c) => {
+    const svc = new ExamService(db(c), u(c));
+    await svc.get(parseId(c)); // access check before touching attempts
+    await new AttemptService(db(c), u(c)).finalizeExpired(parseId(c));
+    return c.json(await svc.monitor(parseId(c)));
+  })
   .post("/:id{[0-9]+}/announcements", async (c) => {
     const { message } = await parseJson(c, announcementSchema);
     const row = await new ExamService(db(c), u(c)).announce(parseId(c), message);
@@ -132,7 +140,12 @@ export const examRoutes = new Hono<AppEnv>()
     publish(c, `attempt-${attemptId}`, { type: "deadline", data: result });
     return c.json(result);
   })
-  .get("/:id{[0-9]+}/grading", async (c) => c.json(await new ExamService(db(c), u(c)).gradingQueue(parseId(c))))
+  .get("/:id{[0-9]+}/grading", async (c) => {
+    const svc = new ExamService(db(c), u(c));
+    await svc.get(parseId(c));
+    await new AttemptService(db(c), u(c)).finalizeExpired(parseId(c));
+    return c.json(await svc.gradingQueue(parseId(c)));
+  })
   .post("/attempts/:attemptId{[0-9]+}/grade", async (c) => {
     const input = await parseJson(c, gradeSchema);
     const attemptId = parseId(c, "attemptId");
@@ -141,13 +154,19 @@ export const examRoutes = new Hono<AppEnv>()
     return c.json(result);
   })
   .post("/:id{[0-9]+}/results/publish", async (c) => {
+    await new ExamService(db(c), u(c)).get(parseId(c));
+    await new AttemptService(db(c), u(c)).finalizeExpired(parseId(c));
     const exam = await new ExamService(db(c), u(c)).publishResults(parseId(c));
     audit(c, "publish_results", "exams", exam.id);
     publish(c, liveTopic(exam.id), { type: "results" });
     return c.json(exam);
   })
   .post("/:id{[0-9]+}/results/unpublish", async (c) => c.json(await new ExamService(db(c), u(c)).unpublishResults(parseId(c))))
-  .get("/:id{[0-9]+}/analytics", async (c) => c.json(await new ReportService(db(c), u(c)).analytics(parseId(c))))
+  .get("/:id{[0-9]+}/analytics", async (c) => {
+    await new ExamService(db(c), u(c)).get(parseId(c));
+    await new AttemptService(db(c), u(c)).finalizeExpired(parseId(c));
+    return c.json(await new ReportService(db(c), u(c)).analytics(parseId(c)));
+  })
   .get("/:id{[0-9]+}/report.pdf", async (c) => {
     const bytes = await new ReportService(db(c), u(c)).examPdf(parseId(c));
     audit(c, "download_report", "exams", parseId(c));
@@ -165,7 +184,11 @@ export const examRoutes = new Hono<AppEnv>()
 // ---- Candidate ----------------------------------------------------------------------------------------------------
 export const candidateRoutes = new Hono<AppEnv>()
   .use(requireAuth)
-  .get("/exams", async (c) => c.json(await new AttemptService(db(c), u(c)).myExams()))
+  .get("/exams", async (c) => {
+    const svc = new AttemptService(db(c), u(c));
+    await svc.finalizeExpired();
+    return c.json(await svc.myExams());
+  })
   .post("/exams/:id{[0-9]+}/start", async (c) => {
     const result = await new AttemptService(db(c), u(c)).start(parseId(c));
     if (!result.resumed) audit(c, "start", "attempts", result.attemptId);

@@ -125,41 +125,6 @@ function WorkspacePreview() {
   );
 }
 
-function MonitorCard() {
-  const rows = [
-    { n: "Hamza Iqbal", p: 5, on: true, s: 1 },
-    { n: "Sana Malik", p: 4, on: true, s: 0 },
-    { n: "Fatima Noor", p: 2, on: false, s: 2 },
-  ];
-  return (
-    <div className="w-64 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] p-4 shadow-[var(--glass-edge),0_24px_50px_-20px_oklch(0.2_0.03_262/0.35)] backdrop-blur-2xl">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold">Live monitor</p>
-        <span className="flex items-center gap-1.5 text-[0.6875rem] font-medium text-success">
-          <span className="relative flex size-1.5"><span className="absolute inset-0 animate-ping rounded-full bg-success/60" /><span className="relative size-1.5 rounded-full bg-success" /></span>
-          3 writing
-        </span>
-      </div>
-      <ul className="mt-3 space-y-2.5">
-        {rows.map((r) => (
-          <li key={r.n} className="text-xs">
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-1.5 font-medium">
-                <span className={cn("size-1.5 rounded-full", r.on ? "bg-success" : "bg-muted-foreground/40")} />
-                {r.n}
-              </span>
-              <span className="text-muted-foreground tabular-nums">{r.p}/6{r.s ? ` · ${r.s} signal${r.s > 1 ? "s" : ""}` : ""}</span>
-            </div>
-            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
-              <div className="h-full rounded-full bg-primary" style={{ width: `${(r.p / 6) * 100}%` }} />
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 function HeroVisual() {
   const reduce = useReducedMotion();
   return (
@@ -171,27 +136,46 @@ function HeroVisual() {
       >
         <WorkspacePreview />
       </motion.div>
-      <motion.div
-        className="absolute -end-6 -bottom-10 hidden lg:block xl:-end-14"
-        initial={reduce ? false : { opacity: 0, x: 30, y: 20 }}
-        animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ duration: 1, ease: EASE, delay: 0.7 }}
-      >
-        <MonitorCard />
-      </motion.div>
-      <motion.div
-        className="absolute -start-8 top-24 hidden items-center gap-2.5 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-strong)] px-4 py-3 shadow-[var(--glass-edge),0_20px_40px_-18px_oklch(0.2_0.03_262/0.35)] backdrop-blur-2xl lg:flex xl:-start-16"
-        initial={reduce ? false : { opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, ease: EASE, delay: 0.9 }}
-      >
-        <span className="grid size-9 place-items-center rounded-xl bg-warning-soft text-warning"><WifiSlash weight="bold" className="size-[1.125rem]" /></span>
-        <span className="text-xs leading-tight">
-          <b className="block text-[0.8125rem] font-semibold">Offline · 2 answers queued</b>
-          <span className="text-muted-foreground">Synced the moment it reconnects</span>
-        </span>
-      </motion.div>
     </div>
+  );
+}
+
+
+// ---- Photo band ------------------------------------------------------------------------------------------------
+
+const PHOTOS = [
+  { id: "photo-1513258496099-48168024aec0", alt: "A student with headphones working on a laptop", title: "For candidates", body: "A quiet workspace that saves every answer and never loses time." },
+  { id: "photo-1580582932707-520aed937b7b", alt: "An empty classroom with rows of desks", title: "For exam halls", body: "Runs on campus Wi-Fi or a phone hotspot, with no installs." },
+  { id: "photo-1758270705317-3ef6142d306f", alt: "A group of students gathered around a laptop", title: "For examiners", body: "Build, publish, watch and grade from one place." },
+];
+const img = (id: string, w: number) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=75`;
+
+function PhotoBand() {
+  return (
+    <section aria-label="Who it is for" className="px-4 pb-8 sm:px-6">
+      <div className="mx-auto grid max-w-6xl gap-4 md:grid-cols-3">
+        {PHOTOS.map((p, i) => (
+          <Reveal key={p.id} delay={i * 0.08}>
+            <figure className="group relative overflow-hidden rounded-[1.5rem] bg-muted">
+              <img
+                src={img(p.id, 900)}
+                srcSet={`${img(p.id, 600)} 600w, ${img(p.id, 900)} 900w, ${img(p.id, 1200)} 1200w`}
+                sizes="(min-width: 768px) 33vw, 100vw"
+                alt={p.alt}
+                loading="lazy"
+                decoding="async"
+                className={cn("w-full object-cover transition-transform duration-[1.2s] ease-[var(--ease-out)] group-hover:scale-[1.04]", i === 1 ? "aspect-[4/5] md:mt-10" : "aspect-[4/5]")}
+              />
+              <figcaption className="absolute inset-x-3 bottom-3 rounded-2xl border border-white/20 bg-black/35 p-4 text-white backdrop-blur-xl">
+                <b className="block text-[0.9375rem] font-semibold tracking-[-0.01em]">{p.title}</b>
+                <span className="mt-0.5 block text-[0.8125rem] text-white/80">{p.body}</span>
+              </figcaption>
+            </figure>
+          </Reveal>
+        ))}
+      </div>
+      <p className="mx-auto mt-3 max-w-6xl text-end text-[0.6875rem] text-muted-foreground">Photos: Unsplash</p>
+    </section>
   );
 }
 
@@ -526,16 +510,7 @@ export function HomePage() {
       <section className="relative overflow-hidden px-4 pt-14 pb-28 sm:px-6 sm:pt-24 sm:pb-36">
         <div className="bg-grid pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" aria-hidden="true" />
         <div className="mx-auto max-w-4xl text-center">
-          <motion.p
-            initial={reduce ? false : { opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: EASE }}
-            className="mx-auto inline-flex items-center gap-2 rounded-full border border-[var(--glass-border)] bg-[var(--glass)] py-1.5 ps-1.5 pe-3.5 text-[0.8125rem] font-medium text-foreground-soft shadow-[var(--glass-edge)] backdrop-blur-xl"
-          >
-            <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">Live demo</span>
-            Sign in as an examiner, a candidate or an admin
-          </motion.p>
-          <h1 className="mt-7 text-[clamp(2.75rem,7.6vw,5.75rem)] leading-[0.95] font-semibold tracking-[-0.055em] text-balance">
+          <h1 className="text-[clamp(2.75rem,7.6vw,5.75rem)] leading-[0.95] font-semibold tracking-[-0.055em] text-balance">
             {words.map((w, i) => (
               <motion.span
                 key={i}
@@ -574,6 +549,7 @@ export function HomePage() {
         <HeroVisual />
       </section>
 
+      <PhotoBand />
       <Workflow />
       <Resilience />
       <Fairness />

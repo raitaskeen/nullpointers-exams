@@ -197,6 +197,20 @@ export class AttemptService {
     return (await this.db.select().from(attempts).where(eq(attempts.id, a.id)).get())!;
   }
 
+  /**
+   * Finalise every attempt whose deadline has passed (for one exam, or all). Examiner views call this first, so
+   * "writing now", grading queues and analytics never show an attempt that is really over.
+   */
+  async finalizeExpired(examId?: number) {
+    const cutoff = new Date(Date.now() - GRACE_MS).toISOString();
+    const open = await this.db
+      .select()
+      .from(attempts)
+      .where(and(eq(attempts.status, "in_progress"), sql`${attempts.deadlineAt} < ${cutoff}`, examId ? eq(attempts.examId, examId) : undefined));
+    for (const a of open) await this.finalizeIfExpired(a);
+    return open.length;
+  }
+
   async state(attemptId: number) {
     const a = await this.finalizeIfExpired(await this.own(attemptId));
     const exam = await this.db.select().from(exams).where(eq(exams.id, a.examId)).get();
