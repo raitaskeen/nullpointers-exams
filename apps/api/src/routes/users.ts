@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { candidateImportRowSchema, emailSchema, passwordSchema, ROLES, type ImportResult } from "@np/shared";
+import { candidateImportRowSchema, createUserSchema, patchUserSchema, ROLES, type ImportResult } from "@np/shared";
 import type { AppEnv } from "../env";
 import { audit } from "../lib/audit";
 import { AppError } from "../lib/errors";
@@ -10,21 +10,6 @@ import { requirePermission } from "../middleware/auth";
 import { randomCode } from "../services/access";
 import { ExamService } from "../services/exam.service";
 import { UserService } from "../services/user.service";
-
-const patchUserSchema = z
-  .object({
-    fullName: z.string().trim().min(1).max(100).optional(),
-    isActive: z.boolean().optional(),
-    roles: z.array(z.enum(ROLES)).min(1).optional(),
-  })
-  .strict();
-
-const createUserSchema = z.object({
-  fullName: z.string().trim().min(1, "Enter a name").max(100),
-  email: emailSchema,
-  password: passwordSchema,
-  role: z.enum(ROLES, { error: "Choose a role" }),
-});
 
 /** Readable one-time password: 4 groups, letters + digits, satisfies the password rules. */
 const tempPassword = () => `${randomCode(4)}-${randomCode(4)}-${Math.floor(10 + Math.random() * 89)}`;

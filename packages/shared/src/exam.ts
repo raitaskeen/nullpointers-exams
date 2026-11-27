@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { emailSchema } from "./auth";
+import { emailSchema, passwordSchema } from "./auth";
+import { ROLES } from "./resource";
 
 /**
  * Exam domain: one set of Zod schemas used by the browser forms AND the API, so every rule and message
@@ -210,3 +211,21 @@ export function scoreObjective(
   const raw = (q.marks * (right - wrong)) / Math.max(1, correct.size);
   return Math.max(0, Math.round(raw * 100) / 100);
 }
+
+// ---- User administration -------------------------------------------------------------------------------------
+
+export const createUserSchema = z.object({
+  fullName: z.string().trim().min(1, "Enter a name").max(100),
+  email: emailSchema,
+  password: passwordSchema,
+  role: z.enum(ROLES, { error: "Choose a role" }),
+});
+export type CreateUserInput = z.infer<typeof createUserSchema>;
+
+export const patchUserSchema = z
+  .object({
+    fullName: z.string().trim().min(1).max(100).optional(),
+    isActive: z.boolean().optional(),
+    roles: z.array(z.enum(ROLES)).min(1).optional(),
+  })
+  .strict();
